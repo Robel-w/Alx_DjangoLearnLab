@@ -17,7 +17,7 @@ class AuthorListView(ListView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class AuthorUpdateView(UpdateView):
+class UpdateView(UpdateView):
     model = Author
     fields = ['name']
 
@@ -30,7 +30,7 @@ class AuthorUpdateView(UpdateView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class AuthorDeleteView(DeleteView):
+class DeleteView(DeleteView):
     model = Author
 
     def delete(self, request, *args, **kwargs):
