@@ -1,25 +1,40 @@
-from rest_framework import generics
+from django.http import JsonResponse
+from django.views.generic import ListView, UpdateView, DeleteView
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from .models import Author, Book
 from .serializers import AuthorSerializer, BookSerializer
+import json
 
-class AuthorListCreateView(generics.ListCreateAPIView):
-    queryset = Author.objects.all()
-    serializer_class = AuthorSerializer
+@method_decorator(csrf_exempt, name='dispatch')
+class AuthorListView(ListView):
+    model = Author
 
-
-class AuthorDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Author.objects.all()
-    serializer_class = AuthorSerializer
-
-
-class BookListCreateView(generics.ListCreateAPIView):
-    queryset = Book.objects.all()
-    serializer_class = BookSerializer
+    def get(self, request, *args, **kwargs):
+        authors = list(Author.objects.all())
+        serializer = AuthorSerializer(authors, many=True)
+        return JsonResponse(serializer.data, safe=False)
 
 
-class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
-   
-    queryset = Book.objects.all()
-    serializer_class = BookSerializer
+@method_decorator(csrf_exempt, name='dispatch')
+class AuthorUpdateView(UpdateView):
+    model = Author
+    fields = ['name']
 
-# Create your views here.
+    def post(self, request, *args, **kwargs):
+        author = self.get_object()
+        data = json.loads(request.body)
+        author.name = data.get('name', author.name)
+        author.save()
+        return JsonResponse({'message': 'Author updated successfully'})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AuthorDeleteView(DeleteView):
+    model = Author
+
+    def delete(self, request, *args, **kwargs):
+        author = self.get_object()
+        author.delete()
+        return JsonResponse({'message': 'Author deleted successfully'})
+
